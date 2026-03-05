@@ -4,8 +4,17 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { registerLabelTools } from "./tools/labels.js";
 import { runAuthFlow } from "./auth-flow.js";
 
-// Handle --auth flag: run OAuth flow instead of starting the server
-if (process.argv.includes("--auth")) {
+if (process.argv.includes("--help") || process.argv.includes("-h")) {
+  console.log(`gmail-labels-mcp-server - MCP server for Gmail label management
+
+Usage:
+  gmail-labels-mcp-server           Start the MCP server (stdio transport)
+  gmail-labels-mcp-server --auth    Run one-time OAuth2 setup
+
+Auth requires GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET env vars.
+See https://github.com/YimingYAN/gmail-labels-mcp-server for setup instructions.`);
+  process.exit(0);
+} else if (process.argv.includes("--auth")) {
   runAuthFlow().catch((error: unknown) => {
     console.error("Auth failed:", error instanceof Error ? error.message : error);
     process.exit(1);
