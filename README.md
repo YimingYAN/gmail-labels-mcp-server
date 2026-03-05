@@ -1,6 +1,6 @@
 # Gmail Labels MCP Server
 
-An MCP server for Gmail label management. Fills the gap in the official Gmail MCP, which lacks label/tag operations.
+An MCP server for Gmail label management. Fills the gap in the official Gmail MCP connector, which lacks label/tag operations.
 
 Handles OAuth2 automatically — run `npm run auth` once, and the server refreshes tokens forever.
 
@@ -41,7 +41,31 @@ GOOGLE_CLIENT_ID=your_client_id GOOGLE_CLIENT_SECRET=your_client_secret npm run 
 
 This opens a browser, you approve Gmail access, and credentials are saved to `~/.gmail-labels-mcp/credentials.json`. You never need to do this again unless you revoke access.
 
-### 4. Configure Claude Desktop
+### 4. Configure your client
+
+#### Claude Code
+
+Via the CLI:
+
+```bash
+claude mcp add gmail-labels -- node /path/to/gmail-labels-mcp-server/dist/index.js
+```
+
+Or add manually to `.claude.json` (or project-level `.mcp.json`):
+
+```json
+{
+  "mcpServers": {
+    "gmail-labels": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["/path/to/gmail-labels-mcp-server/dist/index.js"]
+    }
+  }
+}
+```
+
+#### Claude Desktop
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -50,7 +74,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "gmail-labels": {
       "command": "node",
-      "args": ["/Users/yimingyan/Playground/gmail-labels-mcp-server/dist/index.js"]
+      "args": ["/path/to/gmail-labels-mcp-server/dist/index.js"]
     }
   }
 }
@@ -64,7 +88,7 @@ No env vars needed — the server reads credentials from `~/.gmail-labels-mcp/cr
 - "Create a label called 'Crypto/Compliance'"
 - "Tag message [id] with the Finance label"
 - "Archive all emails from newsletter@example.com"
-- "Star message [id]" → adds STARRED label
+- "Star message [id]" (adds STARRED label)
 - "What labels does message [id] currently have?"
 
 ## Notes

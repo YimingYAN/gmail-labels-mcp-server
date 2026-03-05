@@ -149,7 +149,7 @@ export function handleApiError(error: unknown): string {
     const message = error.response?.data?.error?.message || error.message;
 
     if (status === 401) {
-      return `Authentication failed: ${message}. Ensure your GMAIL_ACCESS_TOKEN is valid and not expired.`;
+      return `Authentication failed: ${message}. Run 'npm run auth' to re-authenticate.`;
     }
     if (status === 403) {
       return `Permission denied: ${message}. Ensure the token has the https://mail.google.com/ scope.`;
