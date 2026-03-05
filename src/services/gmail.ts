@@ -1,4 +1,5 @@
 import axios, { AxiosInstance } from "axios";
+import { getAccessToken } from "./auth.js";
 
 const GMAIL_API_BASE = "https://gmail.googleapis.com/gmail/v1";
 
@@ -28,7 +29,8 @@ export interface ModifyLabelsResult {
   labelIds: string[];
 }
 
-export function createGmailClient(accessToken: string): AxiosInstance {
+export async function createGmailClient(): Promise<AxiosInstance> {
+  const accessToken = await getAccessToken();
   return axios.create({
     baseURL: GMAIL_API_BASE,
     headers: {

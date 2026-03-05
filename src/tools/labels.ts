@@ -12,17 +12,9 @@ import {
   handleApiError,
   type GmailLabel,
 } from "../services/gmail.js";
-import { AxiosInstance } from "axios";
 
-function getClient(): AxiosInstance {
-  const token = process.env.GMAIL_ACCESS_TOKEN;
-  if (!token) {
-    throw new Error(
-      "GMAIL_ACCESS_TOKEN environment variable is required. " +
-      "Obtain an OAuth2 access token with https://mail.google.com/ scope."
-    );
-  }
-  return createGmailClient(token);
+async function getClient() {
+  return createGmailClient();
 }
 
 function formatLabel(label: GmailLabel): string {
@@ -59,7 +51,7 @@ Examples:
     },
     async () => {
       try {
-        const client = getClient();
+        const client = await getClient();
         const labels = await listLabels(client);
 
         const userLabels = labels.filter((l) => l.type === "user");
@@ -112,7 +104,7 @@ Examples:
     },
     async ({ name }) => {
       try {
-        const client = getClient();
+        const client = await getClient();
         const label = await createLabel(client, name);
         return {
           content: [{ type: "text", text: `Created label:\n${formatLabel(label)}` }],
@@ -151,7 +143,7 @@ Examples:
     },
     async ({ label_id }) => {
       try {
-        const client = getClient();
+        const client = await getClient();
         await deleteLabel(client, label_id);
         return {
           content: [{ type: "text", text: `Successfully deleted label: ${label_id}` }],
@@ -198,7 +190,7 @@ Examples:
     },
     async ({ message_id, add_label_ids, remove_label_ids }) => {
       try {
-        const client = getClient();
+        const client = await getClient();
         const result = await modifyMessageLabels(
           client,
           message_id,
@@ -250,7 +242,7 @@ Examples:
     },
     async ({ thread_id, add_label_ids, remove_label_ids }) => {
       try {
-        const client = getClient();
+        const client = await getClient();
         const result = await modifyThreadLabels(
           client,
           thread_id,
@@ -298,7 +290,7 @@ Examples:
     },
     async ({ message_id }) => {
       try {
-        const client = getClient();
+        const client = await getClient();
         const message = await getMessageMetadata(client, message_id);
         const text = [
           `Message: ${message.id}`,
@@ -355,7 +347,7 @@ Examples:
     },
     async ({ query, add_label_ids, remove_label_ids, max_results }) => {
       try {
-        const client = getClient();
+        const client = await getClient();
         const messages = await searchMessages(client, query, max_results);
 
         if (messages.length === 0) {

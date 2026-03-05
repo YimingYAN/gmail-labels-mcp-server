@@ -1,13 +1,15 @@
 # Gmail Labels MCP Server
 
-An MCP server that exposes Gmail label management via the Gmail REST API. Fills the gap in the official Gmail MCP, which lacks label/tag operations.
+An MCP server for Gmail label management. Fills the gap in the official Gmail MCP, which lacks label/tag operations.
+
+Handles OAuth2 automatically — run `npm run auth` once, and the server refreshes tokens forever.
 
 ## Tools
 
 | Tool | Description |
 |------|-------------|
 | `gmail_list_labels` | List all labels with IDs, names, and message counts |
-| `gmail_create_label` | Create a new label (supports nested labels with `/`) |
+| `gmail_create_label` | Create a new label (supports nesting with `/`) |
 | `gmail_delete_label` | Delete a user-created label |
 | `gmail_get_message_labels` | Get current labels on a specific message |
 | `gmail_modify_message_labels` | Add/remove labels on a specific message |
@@ -16,30 +18,30 @@ An MCP server that exposes Gmail label management via the Gmail REST API. Fills 
 
 ## Setup
 
-### 1. Get a Gmail OAuth2 Access Token
+### 1. Create Google OAuth2 credentials (one-time)
 
-You need an access token with the `https://mail.google.com/` scope. Options:
+1. Go to https://console.cloud.google.com/
+2. Create a project (or use an existing one) and enable the **Gmail API**
+3. Go to **APIs & Services > Credentials > Create Credentials > OAuth Client ID**
+4. Choose **Desktop app** as the application type
+5. Copy the **Client ID** and **Client Secret**
 
-**Option A — Google OAuth Playground (quickest for testing):**
-1. Go to https://developers.google.com/oauthplayground
-2. Select `Gmail API v1` → `https://mail.google.com/`
-3. Authorise and exchange for an access token
-4. Copy the access token
-
-**Option B — Your own OAuth2 app (for production):**
-1. Create a project in Google Cloud Console
-2. Enable the Gmail API
-3. Create OAuth2 credentials (Desktop app)
-4. Run the OAuth flow to get a refresh token, then exchange for an access token
-
-### 2. Install and Build
+### 2. Install and build
 
 ```bash
 npm install
 npm run build
 ```
 
-### 3. Configure Claude Desktop
+### 3. Run the auth flow (one-time)
+
+```bash
+GOOGLE_CLIENT_ID=your_client_id GOOGLE_CLIENT_SECRET=your_client_secret npm run auth
+```
+
+This opens a browser, you approve Gmail access, and credentials are saved to `~/.gmail-labels-mcp/credentials.json`. You never need to do this again unless you revoke access.
+
+### 4. Configure Claude Desktop
 
 Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -48,31 +50,21 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "gmail-labels": {
       "command": "node",
-      "args": ["/path/to/gmail-labels-mcp-server/dist/index.js"],
-      "env": {
-        "GMAIL_ACCESS_TOKEN": "your_access_token_here"
-      }
+      "args": ["/Users/yimingyan/Playground/gmail-labels-mcp-server/dist/index.js"]
     }
   }
 }
 ```
 
-### 4. Refresh Tokens (Production)
-
-Access tokens expire after ~1 hour. For production use, implement token refresh:
-- Store refresh token alongside access token
-- Add a token refresh helper that calls `https://oauth2.googleapis.com/token`
-- Call it before each API request if the access token is expired
+No env vars needed — the server reads credentials from `~/.gmail-labels-mcp/credentials.json` and auto-refreshes tokens.
 
 ## Example Usage
-
-Once connected, you can ask Claude:
 
 - "List all my Gmail labels"
 - "Create a label called 'Crypto/Compliance'"
 - "Tag message [id] with the Finance label"
 - "Archive all emails from newsletter@example.com"
-- "Add the STARRED label to message [id]"
+- "Star message [id]" → adds STARRED label
 - "What labels does message [id] currently have?"
 
 ## Notes
@@ -80,3 +72,4 @@ Once connected, you can ask Claude:
 - System label IDs: `INBOX`, `SENT`, `TRASH`, `SPAM`, `STARRED`, `IMPORTANT`, `UNREAD`
 - User label IDs follow the format `Label_XXXXXXXXXX`
 - Use `gmail_list_labels` first to discover label IDs before modifying messages
+- To re-authenticate: delete `~/.gmail-labels-mcp/credentials.json` and run `npm run auth` again
