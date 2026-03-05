@@ -1,5 +1,4 @@
 node_modules/
-dist/
 scripts/*.js
 scripts/*.js.map
 scripts/*.d.ts
